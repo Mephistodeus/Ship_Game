@@ -1,7 +1,13 @@
 
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateful;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -18,7 +24,8 @@ public class Map implements IRadarMap, IMap {
     public static double SIZE_X = 1024.0;
     public static double SIZE_Y = 1024.0;
     private static ArrayList<Obstacle> obstacles;
-    private static ArrayList<Vector2> ships;
+    private static ArrayList<IMapShip> ships;
+    
 
     @Override
     public double[] hit(double x, double y, double dx, double dy) {
@@ -28,9 +35,11 @@ public class Map implements IRadarMap, IMap {
     @Override
     public double[] getShips() {
         double[] ret = new double[ships.size()*2];
+        double[] position;
         for( int i=0;i<ships.size();i++){
-            ret[i*2] = ships.get(i).x;
-            ret[i*2+1] = ships.get(i).y;
+            position = ships.get(i).position();
+            ret[i*2] = position[0];
+            ret[i*2+1] = position[1];
         }
         return ret;
     }
@@ -54,8 +63,18 @@ public class Map implements IRadarMap, IMap {
         ships = new ArrayList<>();
         obstacles = new ArrayList<>();
         Random rand = new Random();
-        ships.add(new Vector2(rand.nextDouble()*SIZE_X,
-                rand.nextDouble()*SIZE_Y));
+        Properties jndiProps = new Properties();
+        jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        jndiProps.put(Context.PROVIDER_URL,"remote://192.168.43.231:8686");
+        // create a context passing these properties
+        Context ctx;
+        try {
+            ctx = new InitialContext(jndiProps);
+            IMapShip ship = (IMapShip) ctx.lookup("foo/bar");
+            ships.add(ship);
+        } catch (NamingException ex) {
+            Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
+        }
         obstacles.add(new Circle(new Vector2(SIZE_X/2, SIZE_Y/2),
             new Vector2(rand.nextDouble()*SIZE_X/4 + SIZE_X/4,
                     rand.nextDouble()*SIZE_Y/4 + SIZE_Y/4)));

@@ -1,3 +1,6 @@
+
+import javax.ejb.Remote;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -8,6 +11,7 @@
  *
  * @author User
  */
+@Remote
 public interface IMap {
     /**
      * @return array with ships positions {x1,y1,x2,y2,x3...}
