@@ -1,3 +1,5 @@
+package ztp.ejb.ship;
+
 
 import javax.ejb.Remote;
 

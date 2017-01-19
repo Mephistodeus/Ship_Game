@@ -1,3 +1,5 @@
+package ztp.ejb.ship;
+
 
 import ztp.ejb.ship.IMapShip;
 import java.util.ArrayList;
@@ -98,11 +100,12 @@ public class Map implements IRadarMap, IMap {
         // create a context passing these properties
         Context ctx;
         try {
-            ctx = loadProperties("192.168.43.110", "3700");
-            IMapShip ship = (IMapShip) ctx.lookup("java:global/Ship/Ship!ztp.ejb.ship.IMapShip");
+            ctx = loadProperties("192.168.43.48", "3700");
+            IMapShip ship = (IMapShip) ctx.lookup("java:global/Ship-lab/Ship!ztp.ejb.ship.IMapShip");
+            System.out.println("connected");
             ships.add(ship);
             ship.init();
-        } catch (NamingException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }
         obstacles.add(new Circle(new Vector2(SIZE_X/2, SIZE_Y/2),
@@ -129,16 +132,21 @@ public class Map implements IRadarMap, IMap {
  
             System.out.println("h: " + h + " p: " + p);
  
-            props.setProperty("java.naming.factory.initial",
+            /*props.setProperty("java.naming.factory.initial",
                     "com.sun.enterprise.naming.SerialInitContextFactory");
             props.setProperty("java.naming.factory.url.pkgs",
                     "com.sun.enterprise.naming");
             props.setProperty("java.naming.factory.state",
                     "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
             props.setProperty("org.omg.CORBA.ORBInitialHost", h);
-            props.setProperty("org.omg.CORBA.ORBInitialPort", p);
+            props.setProperty("org.omg.CORBA.ORBInitialPort", p);*/
+            Properties jndiProps = new Properties();
+            jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+            jndiProps.setProperty("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
+            jndiProps.setProperty("java.naming.factory.state","com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
+            jndiProps.put(Context.PROVIDER_URL, h + ":" + p);
             
-            ic = new InitialContext(props);
+            ic = new InitialContext(jndiProps);
             
         } catch (NamingException ex) {
             Logger.getLogger("Fail");
