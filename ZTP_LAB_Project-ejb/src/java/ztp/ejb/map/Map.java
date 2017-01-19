@@ -1,7 +1,7 @@
-package ztp.ejb.ship;
+package ztp.ejb.map;
 
 
-import ztp.ejb.ship.IMapShip;
+import ztp.ejb.map.IMapShip;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
@@ -11,6 +11,7 @@ import javax.ejb.Stateful;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import ztp.ejb.ship.Ship;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -98,7 +99,7 @@ public class Map implements IRadarMap, IMap {
         obstacles = new ArrayList<>();
         Random rand = new Random();
         // create a context passing these properties
-        Context ctx;
+        /*Context ctx;
         try {
             ctx = loadProperties("192.168.43.48", "3700");
             IMapShip ship = (IMapShip) ctx.lookup("java:global/Ship-lab/Ship!ztp.ejb.ship.IMapShip");
@@ -107,7 +108,7 @@ public class Map implements IRadarMap, IMap {
             ship.init();
         } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         obstacles.add(new Circle(new Vector2(SIZE_X/2, SIZE_Y/2),
             new Vector2(rand.nextDouble()*SIZE_X/4 + SIZE_X/4,
                     rand.nextDouble()*SIZE_Y/4 + SIZE_Y/4)));

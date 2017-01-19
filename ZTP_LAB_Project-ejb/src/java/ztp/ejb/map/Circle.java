@@ -1,4 +1,4 @@
-package ztp.ejb.ship;
+package ztp.ejb.map;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

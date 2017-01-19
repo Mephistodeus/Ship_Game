@@ -1,4 +1,4 @@
-package ztp.ejb.ship;
+package ztp.ejb.map;
 
 
 import javax.ejb.Remote;
