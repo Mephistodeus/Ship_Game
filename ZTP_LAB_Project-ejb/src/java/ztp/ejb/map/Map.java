@@ -1,17 +1,16 @@
 package ztp.ejb.map;
 
 
-import ztp.ejb.map.IMapShip;
+import static java.lang.Math.ceil;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Stateful;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import ztp.ejb.ship.Ship;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -22,7 +21,8 @@ import ztp.ejb.ship.Ship;
  *
  * @author Damian Gancarz
  */
-@Stateful
+@Startup
+@Singleton
 public class Map implements IRadarMap, IMap {
 
     public static double SIZE_X = 1024.0;
@@ -34,30 +34,32 @@ public class Map implements IRadarMap, IMap {
     @Override
     public double[] hit(double x, double y, double dx, double dy) {
         double ret[] = {
-            Double.MAX_VALUE,Double.MAX_VALUE,
-            Double.MAX_VALUE,Double.MAX_VALUE
+            Double.NaN,Double.NaN,
+            Double.NaN,Double.NaN
         };
-        Vector2[] v;
+        Vector2 v[], v1, v2;
         for(Obstacle o : obstacles){
-            v = o.hit(new Vector2(x, y), new Vector2(dx, dy));
+            v1 = new Vector2(x, y);
+            v2 = new Vector2(dx, dy);
+            v = o.hit(v1, v2);
             if(v!=null){
                 //checking for map borders and single points
-                if(!overflow(v[0])){
+                if(!overflow(v[0]) && v[0].between(v1, v2)){
                     ret[0] = v[0].x;
                     ret[1] = v[0].y;
                 } else{
-                    ret[0] = Double.MAX_VALUE;
-                    ret[1] = Double.MAX_VALUE;
+                    ret[0] = Double.NaN;
+                    ret[1] = Double.NaN;
                 }
-                if(!overflow(v[1]) && !(v[0].x==v[1].x&&v[0].y==v[1].y)){
+                if(!overflow(v[1]) && v[1].between(v1, v2) && !(v[0].x==v[1].x&&v[0].y==v[1].y)){
                     ret[2] = v[1].x;
                     ret[3] = v[1].y;
                 }
                 else{
-                    ret[2] = Double.MAX_VALUE;
-                    ret[3] = Double.MAX_VALUE;
+                    ret[2] = Double.NaN;
+                    ret[3] = Double.NaN;
                 }
-                if(ret[1]!=ret[3]&&(ret[1]!=Double.MAX_VALUE||ret[3]!=Double.MAX_VALUE)){
+                if(ret[1]!=ret[3]&&(ret[1]!=Double.NaN||ret[3]!=Double.NaN)){
                     break;
                 }
             }
@@ -86,10 +88,10 @@ public class Map implements IRadarMap, IMap {
 
     @Override
     public int[][] getMap() {
-        int[][] ret = new int[(int)(SIZE_X + 0.5)][(int)(SIZE_Y + 0.5)];
-        obstacles.stream().forEach((obstacle) -> {
-            drawObstacle(obstacle, ret);
-        });
+        int[][] ret = new int[(int)ceil(SIZE_X)][(int)ceil(SIZE_Y)];
+        for(int i=0;i<obstacles.size();i++){
+            drawObstacle(obstacles.get(i), ret);
+        }
         return ret;
     }
 
@@ -98,6 +100,7 @@ public class Map implements IRadarMap, IMap {
         ships = new ArrayList<>();
         obstacles = new ArrayList<>();
         Random rand = new Random();
+        
         // create a context passing these properties
         /*Context ctx;
         try {
@@ -109,17 +112,31 @@ public class Map implements IRadarMap, IMap {
         } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }*/
-        obstacles.add(new Circle(new Vector2(SIZE_X/2, SIZE_Y/2),
-            new Vector2(rand.nextDouble()*SIZE_X/4 + SIZE_X/4,
-                    rand.nextDouble()*SIZE_Y/4 + SIZE_Y/4)));
+        
+        int obstaclesAmmount = 4;
+        for(int i=0;i < obstaclesAmmount;i++){
+            obstacles.add(new Circle(getRandomVector(SIZE_X, SIZE_Y), 
+                getRandomVector(SIZE_X/4, SIZE_Y/4)));
+        }
+        int shipsAmmount = 4;
+        IMapShip ship;
+        double hit[];
+        for(int i=0;i < shipsAmmount;i++){
+            ship = new ShipTest();
+            do{
+                ship.init();
+                hit = hit(ship.position()[0], ship.position()[1],ship.position()[0]+1, ship.position()[1]);
+            } while(!Double.isNaN(hit[0])&&!Double.isNaN(hit[1]));
+            ships.add(ship);
+        }
     }
     
     private void drawObstacle(Obstacle obstacle, int[][] ret){
         int[][] item = obstacle.draw();
         for(int i=0;i<item.length;i++){
-            if(i+(int)(obstacle.position.y)<(int)(SIZE_X+0.5)){
+            if(i+(int)(obstacle.position.x)<ceil(SIZE_X)){
                 for(int j=0;j<item[0].length;j++){
-                    if(j+(int)(obstacle.position.y)<(int)(SIZE_Y+0.5)){
+                    if(j+ceil(obstacle.position.y)<ceil(SIZE_Y)){
                         ret[i+(int)obstacle.getPosition().x][j+(int)obstacle.getPosition().y] |= item[i][j];
                     }
                 }
@@ -141,6 +158,7 @@ public class Map implements IRadarMap, IMap {
                     "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl");
             props.setProperty("org.omg.CORBA.ORBInitialHost", h);
             props.setProperty("org.omg.CORBA.ORBInitialPort", p);*/
+            
             Properties jndiProps = new Properties();
             jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
             jndiProps.setProperty("java.naming.factory.url.pkgs", "com.sun.enterprise.naming");
@@ -156,6 +174,10 @@ public class Map implements IRadarMap, IMap {
         return ic;
     }
 
+    private Vector2 getRandomVector(double rangeX, double rangeY){
+        Random random = new Random();
+        return new Vector2(random.nextDouble()*rangeX, random.nextDouble()*rangeY);
+    }
     private boolean overflow(Vector2 v) {
         return v.x > SIZE_X || v.x < 0 || v.y > SIZE_Y || v.y < 0;
     }
