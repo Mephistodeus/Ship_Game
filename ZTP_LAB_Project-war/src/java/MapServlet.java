@@ -5,12 +5,13 @@
  */
 
 import ztp.ejb.map.IMap;
-import com.sun.image.codec.jpeg.JPEGCodec;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.OutputStream;
 import javax.ejb.EJB;
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
@@ -49,7 +50,7 @@ public class MapServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("image/jpeg");
+        response.setContentType("image/jpg");
 
         map.init();
 
@@ -86,9 +87,9 @@ public class MapServlet extends HttpServlet {
             }
             graphics.setColor(SHIP_COLOR);
         }
-        graphics.setColor(COLOR);
-
-        JPEGCodec.createJPEGEncoder(out).encode(image);
+        try (OutputStream output = response.getOutputStream()) {
+            ImageIO.write(image, "jpg", out);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
