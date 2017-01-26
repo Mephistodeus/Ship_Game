@@ -3,6 +3,7 @@ package ztp.ejb.map;
 
 import static java.lang.Math.ceil;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -25,10 +26,12 @@ import javax.naming.NamingException;
 @Singleton
 public class Map implements IRadarMap, IMap {
 
-    public static double SIZE_X = 1024.0;
-    public static double SIZE_Y = 1024.0;
+    public static final double SIZE_X = 1024.0;
+    public static final double SIZE_Y = 1024.0;
+    public static final int INTERVAL = 1000;
     private static ArrayList<Obstacle> obstacles;
     private static ArrayList<IMapShip> ships;
+    private static long time = 0;
     
 
     @Override
@@ -83,6 +86,14 @@ public class Map implements IRadarMap, IMap {
 
     @Override
     public double[] updateShips() {
+        long now = System.currentTimeMillis();
+        long difference = now - time;
+        if(difference > INTERVAL){
+            time = now;
+            for( int i=0;i<ships.size();i++){
+                ships.get(i).update();
+            }
+        }
         return getShips();
     }
 
@@ -103,6 +114,9 @@ public class Map implements IRadarMap, IMap {
         if(obstacles == null){
             obstacles = new ArrayList<>();
         }
+        if(time == 0){
+            time = System.currentTimeMillis();
+        }
         Random rand = new Random();
         
         // create a context passing these properties
@@ -116,7 +130,6 @@ public class Map implements IRadarMap, IMap {
         } catch (Exception ex) {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }*/
-        
         if(obstacles.isEmpty()){
             int obstaclesAmmount = 4;
             for(int i=0;i < obstaclesAmmount;i++){

@@ -29,9 +29,23 @@ public class ShipTest implements IMapShip{
     @Override
     public double[] position() {
         double ret[] = new double[2];
-        ret[0] = x;
-        ret[1] = y;
+        ret[0] = this.x;
+        ret[1] = this.y;
         return ret;
+    }
+
+    @Override
+    public void update() {
+        Random random = new Random();
+        double moveX;
+        double moveY;
+        do{
+            moveX = random.nextDouble() * 100 - 50;
+            moveY = random.nextDouble() * 100 - 50;
+        } while((this.x + moveX) < 0 || (this.x + moveX) > SIZE_X || 
+                (this.y + moveY) < 0 || (this.y + moveY) > SIZE_Y );
+        this.x += moveX;
+        this.y += moveY;
     }
     
 }

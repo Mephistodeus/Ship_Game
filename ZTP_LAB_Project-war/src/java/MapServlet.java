@@ -70,11 +70,11 @@ public class MapServlet extends HttpServlet {
             }
         }
         graphics.setColor(SHIP_COLOR);
-        double ships[] = map.getShips();
+        double ships[] = map.updateShips();
         double hit[];
         for (int i = 0; (i + 1) < ships.length; i += 2) {
             graphics.drawOval((int) ships[i] - SHIP_SIZE/2, (int) ships[i + 1] - SHIP_SIZE/2, SHIP_SIZE, SHIP_SIZE);
-            graphics.setColor(Color.RED);
+            /*graphics.setColor(Color.RED);
             graphics.drawOval((int) ships[i] + 50 - SHIP_SIZE/2, (int) ships[i + 1] + 50 - SHIP_SIZE/2, SHIP_SIZE, SHIP_SIZE);
             hit = radar.hit(ships[i], ships[i + 1], ships[i] + 50, ships[i + 1] + 50);
             for (int j = 0; (j + 1) < hit.length; j += 2) {
@@ -85,7 +85,7 @@ public class MapServlet extends HttpServlet {
                     
                 }
             }
-            graphics.setColor(SHIP_COLOR);
+            graphics.setColor(SHIP_COLOR);*/
         }
         try (OutputStream output = response.getOutputStream()) {
             ImageIO.write(image, "jpg", out);

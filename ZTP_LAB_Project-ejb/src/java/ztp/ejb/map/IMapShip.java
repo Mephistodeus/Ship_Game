@@ -13,4 +13,5 @@ package ztp.ejb.map;
 public interface IMapShip {
     public void init();
     public double[] position();
+    public void update();
 }
