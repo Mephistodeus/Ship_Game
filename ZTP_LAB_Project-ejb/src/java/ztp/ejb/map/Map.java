@@ -97,8 +97,12 @@ public class Map implements IRadarMap, IMap {
 
     @Override
     public void init() {
-        ships = new ArrayList<>();
-        obstacles = new ArrayList<>();
+        if(ships == null){
+            ships = new ArrayList<>();
+        }
+        if(obstacles == null){
+            obstacles = new ArrayList<>();
+        }
         Random rand = new Random();
         
         // create a context passing these properties
@@ -113,21 +117,25 @@ public class Map implements IRadarMap, IMap {
             Logger.getLogger(Map.class.getName()).log(Level.SEVERE, null, ex);
         }*/
         
-        int obstaclesAmmount = 4;
-        for(int i=0;i < obstaclesAmmount;i++){
-            obstacles.add(new Circle(getRandomVector(SIZE_X, SIZE_Y), 
-                getRandomVector(SIZE_X/4, SIZE_Y/4)));
+        if(obstacles.isEmpty()){
+            int obstaclesAmmount = 4;
+            for(int i=0;i < obstaclesAmmount;i++){
+                obstacles.add(new Circle(getRandomVector(SIZE_X, SIZE_Y), 
+                    getRandomVector(SIZE_X/4, SIZE_Y/4)));
+            }
         }
-        int shipsAmmount = 4;
-        IMapShip ship;
-        double hit[];
-        for(int i=0;i < shipsAmmount;i++){
-            ship = new ShipTest();
-            do{
-                ship.init();
-                hit = hit(ship.position()[0], ship.position()[1],ship.position()[0]+1, ship.position()[1]);
-            } while(!Double.isNaN(hit[0])&&!Double.isNaN(hit[1]));
-            ships.add(ship);
+        if(ships.isEmpty()){
+            int shipsAmmount = 4;
+            IMapShip ship;
+            double hit[];
+            for(int i=0;i < shipsAmmount;i++){
+                ship = new ShipTest();
+                do{
+                    ship.init();
+                    hit = hit(ship.position()[0], ship.position()[1],ship.position()[0]+1, ship.position()[1]);
+                } while(!Double.isNaN(hit[0])&&!Double.isNaN(hit[1]));
+                ships.add(ship);
+            }
         }
     }
     
